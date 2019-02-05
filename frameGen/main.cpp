@@ -1,6 +1,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL_ttf.h>
+#include <cmath>
 #include "frameGenerator.h"
 
 const std::string TITLE = "Zeandre Lindsey's ";
@@ -26,11 +27,15 @@ void drawCircle(SDL_Renderer* renderer,
 void drawTriangle(SDL_Renderer* renderer,
   SDL_Point center, int width, int height, SDL_Color color) {
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    for (int h = 0; h < height; h++){
-      for (int w = width - (h/((width > height)?(width/height):(height/width)));
-          w >= 0 ; w--){
+    for (int h = 0; h < abs(height); h++){
+    	int calcWidth = (h/((width > abs(height))?(width/abs(height)):(abs(height)/width)));
+      for (int w = 0; w < calcWidth ; w++){
         int dx = center.x - w;
-        int dy = center.y + h;
+        int dy = 0;
+        if (height < 0)
+          dy = center.y - h;
+        else
+          dy = center.y + h;
         SDL_RenderDrawPoint(renderer, dx, dy);
         dx = center.x + w;
         SDL_RenderDrawPoint(renderer, dx, dy);
@@ -88,13 +93,13 @@ int main(void) {
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 
 
-    SDL_Point center = {100, 100};
+    SDL_Point center = {320, 400};
     SDL_Color color = {255,175,0,255};
-    int radius1 = 80;//, radius2 = 75 - (i * 5);
+    int radius1 = 50;//, radius2 = 75 - (i * 5);
     drawCircle(renderer, center, radius1, color);
     //center = {(100 -(radius1-radius2)) * i, 100};
     color = {255,125,0,255};
-    drawTriangle(renderer, center, radius1, radius1*3, color);
+    drawTriangle(renderer, center, radius1, radius1*-3, color);
 
 
 
