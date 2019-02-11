@@ -2,27 +2,19 @@
 #include <SDL2/SDL.h>
 #include <SDL_ttf.h>
 #include <cmath>
+#include <cstdlib>
+#include <ctime>
 #include "frameGenerator.h"
+#include "sunray.h"
 
-const std::string TITLE = "Zeandre Lindsey's ";
+const std::string TITLE = "Zeandre Lindsey's Sunrise";
 const std::string NAME = "zlindse";
 
 const int WIDTH = 640;
 const int HEIGHT = 480;
 
-void drawCircle(SDL_Renderer* renderer,
-  SDL_Point center, int radius, SDL_Color color) {
-  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-  for (int w = 0; w < radius * 2; w++) {
-    for (int h = 0; h < radius * 2; h++) {
-      int dx = radius - w; // horizontal offset
-      int dy = radius - h; // vertical offset
-      if ((dx*dx + dy*dy) <= (radius * radius)) {
-        SDL_RenderDrawPoint(renderer, center.x + dx, center.y + dy);
-      }
-    }
-  }
-}
+//const SDL_Color background = {200, 200, 255, 255};
+
 
 void drawTriangle(SDL_Renderer* renderer,
   SDL_Point center, int width, int height, SDL_Color color) {
@@ -43,6 +35,42 @@ void drawTriangle(SDL_Renderer* renderer,
     }
 }
 
+void drawTerrain(SDL_Renderer* renderer, int height, SDL_Color color){
+	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+	int lastHeight = height;
+	bool peaked = false;
+	bool plateau = false;
+	srand(time(NULL));
+	for (int w = 0; w < WIDTH; w++){
+		int h = lastHeight;
+		if (!plateau && w > WIDTH/2 && w % 5 == 0){
+			if (!peaked){
+				h = lastHeight - (rand() % 7);
+				if (h <= height - 100){
+					peaked = true;
+					h = height - 100;
+				}
+				
+			}
+			else {
+				h = lastHeight + (rand() % 2);
+				if (h >= height){
+					plateau = true;
+					h = height;
+				}
+			}
+		}
+		
+		lastHeight = h;
+		for (; h < HEIGHT; h++){
+			SDL_RenderDrawPoint(renderer, w, h);
+		}
+	}
+}
+
+void drawSword(){
+	
+}
 
 void writeName(SDL_Renderer* renderer) {
   TTF_Init();
@@ -87,20 +115,18 @@ int main(void) {
     SDL_SetRenderDrawBlendMode(renderer,
                                SDL_BLENDMODE_BLEND);
 
+		//SDL_Color background = {200, 200, 255, 255}
 
-    SDL_SetRenderDrawColor( renderer, 200, 200, 255, 255 );
+    SDL_SetRenderDrawColor( renderer, background.r, background.g, background.b, background.a);
     SDL_RenderClear(renderer);
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-
-
-    SDL_Point center = {320, 400};
-    SDL_Color color = {255,175,0,255};
-    int radius1 = 50;//, radius2 = 75 - (i * 5);
-    drawCircle(renderer, center, radius1, color);
-    //center = {(100 -(radius1-radius2)) * i, 100};
-    color = {255,125,0,255};
-    drawTriangle(renderer, center, radius1, radius1*-3, color);
-
+    
+ 		SDL_Point center = {320, 300};
+ 		int radius = 75;
+ 		SDL_Color color = {237,199,9,255};
+		Sunray rays(renderer, center, radius, color);
+		rays.drawRays(5);
+		SDL_Color groundColor = {97,204,95,255};	// to {50,112,49, 255}
+		drawTerrain(renderer, 300, groundColor);
 
 
     writeName(renderer);

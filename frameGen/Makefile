@@ -8,7 +8,8 @@ LDFLAGS = `sdl2-config --libs` -lm -lSDL2_ttf
 
 OBJS = \
   frameGenerator.o \
-  main.o
+  main.o \
+  sunray.o
 
 EXEC = run
 
