@@ -13,33 +13,40 @@ const std::string NAME = "zlindse";
 const int WIDTH = 640;
 const int HEIGHT = 480;
 
-//const SDL_Color background = {200, 200, 255, 255};
-
-
-void drawTriangle(SDL_Renderer* renderer,
-  SDL_Point center, int width, int height, SDL_Color color) {
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    for (int h = 0; h < abs(height); h++){
-    	int calcWidth = (h/((width > abs(height))?(width/abs(height)):(abs(height)/width)));
-      for (int w = 0; w < calcWidth ; w++){
-        int dx = center.x - w;
-        int dy = 0;
-        if (height < 0)
-          dy = center.y - h;
-        else
-          dy = center.y + h;
-        SDL_RenderDrawPoint(renderer, dx, dy);
-        dx = center.x + w;
-        SDL_RenderDrawPoint(renderer, dx, dy);
+void drawDoor(SDL_Renderer* renderer, SDL_Point center, int radius, SDL_Color color) {
+  SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+  for (int w = 0; w < radius * 2; w++) {
+    for (int h = 0; h < radius * 2; h++) {
+      int dx = radius - w; // horizontal offset
+      int dy = radius - h; // vertical offset
+      if (center.y + dy >= center.y && (center.x + dx >= radius - center.x && center.x + dx < radius+center.x))
+        SDL_RenderDrawPoint(renderer, center.x + dx, center.y + dy);
+      else if (((dx*dx + dy*dy) <= (radius * radius))) {
+        SDL_RenderDrawPoint(renderer, center.x + dx, center.y + dy);
       }
     }
+  }
 }
+void drawSky(SDL_Renderer* renderer, int height, SDL_Color color){
+  int red, green, blue, alpha;
+  for (int h = 0; h <= height; h++){
+    for (int w = 0; w < WIDTH; w++){
+      red = color.r + 2*h/5;
+      green = color.g + h/9;
+      blue = color.b - h/3;
+      alpha = color.a;
+      SDL_SetRenderDrawColor(renderer, red, green, blue, alpha);
+      SDL_RenderDrawPoint(renderer, w, h);
+    }
+  }
 
+}
 void drawTerrain(SDL_Renderer* renderer, int height, SDL_Color color){
-	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 	int lastHeight = height;
 	bool peaked = false;
 	bool plateau = false;
+  SDL_Point center;
+  int radius = 25;
 	srand(time(NULL));
 	for (int w = 0; w < WIDTH; w++){
 		int h = lastHeight;
@@ -47,10 +54,11 @@ void drawTerrain(SDL_Renderer* renderer, int height, SDL_Color color){
 			if (!peaked){
 				h = lastHeight - (rand() % 7);
 				if (h <= height - 100){
-					peaked = true;
+          peaked = true;
+          center = {w + radius/2, height - radius - 1};
 					h = height - 100;
 				}
-				
+
 			}
 			else {
 				h = lastHeight + (rand() % 2);
@@ -60,16 +68,21 @@ void drawTerrain(SDL_Renderer* renderer, int height, SDL_Color color){
 				}
 			}
 		}
-		
+    int redChange, greenChange, blueChange;
 		lastHeight = h;
 		for (; h < HEIGHT; h++){
+      if (h >= height){
+        redChange = -1 * (2 * int(h-height)/3);
+        greenChange = -1 * ((h-height)/2);
+        blueChange = -1 * ((h-height)/6);
+        SDL_SetRenderDrawColor(renderer, 136 + redChange, 170 + greenChange, 55 + blueChange, color.a);
+      }
+      else
+        SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 			SDL_RenderDrawPoint(renderer, w, h);
 		}
 	}
-}
-
-void drawSword(){
-	
+  drawDoor(renderer, center, radius,{11, 35, 14,255});
 }
 
 void writeName(SDL_Renderer* renderer) {
@@ -78,7 +91,7 @@ void writeName(SDL_Renderer* renderer) {
   if (font == NULL) {
     throw std::string("error: font not found");
   }
-  SDL_Color textColor = {0xff, 0, 0, 0};
+  SDL_Color textColor = {76, 149, 178, 255};
   SDL_Surface* surface =
     TTF_RenderText_Solid(font, TITLE.c_str(), textColor);
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -115,20 +128,17 @@ int main(void) {
     SDL_SetRenderDrawBlendMode(renderer,
                                SDL_BLENDMODE_BLEND);
 
-		//SDL_Color background = {200, 200, 255, 255}
-
-    SDL_SetRenderDrawColor( renderer, background.r, background.g, background.b, background.a);
+    SDL_SetRenderDrawColor( renderer,24, 56, 127,255);
     SDL_RenderClear(renderer);
-    
+
+    drawSky(renderer, 300, background);
  		SDL_Point center = {320, 300};
  		int radius = 75;
  		SDL_Color color = {237,199,9,255};
 		Sunray rays(renderer, center, radius, color);
 		rays.drawRays(5);
-		SDL_Color groundColor = {97,204,95,255};	// to {50,112,49, 255}
+		SDL_Color groundColor = {16,85,25,255};
 		drawTerrain(renderer, 300, groundColor);
-
-
     writeName(renderer);
     SDL_RenderPresent(renderer);
     FrameGenerator frameGen(renderer, window, WIDTH, HEIGHT, NAME);

@@ -17,9 +17,7 @@ void Sunray::drawRays(int numOfRays) {
 		else{
   		colorChoice = background;
 		}
-  		
 		angle = baseAngle*n;
-		std::cout << angle << "			" << tanh(angle) << std::endl;
 		drawPartCircle(tan(angle), colorChoice);
   }
   SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 255);
@@ -27,7 +25,6 @@ void Sunray::drawRays(int numOfRays) {
 }
 
 void Sunray::drawCircle() {
-  //SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
   for (int w = 0; w < radius * 2; w++) {
     for (int h = 0; h < radius * 2; h++) {
       int dx = radius - w; // horizontal offset
@@ -40,8 +37,6 @@ void Sunray::drawCircle() {
 }
 
 void Sunray::drawPartCircle(float slope, SDL_Color color) {
-  //SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-  
   int radMult = 5;
   float rad = radius * radMult;
   for (int w = 0; w < rad * 2 ; w++) {
@@ -51,10 +46,34 @@ void Sunray::drawPartCircle(float slope, SDL_Color color) {
       float cSquared = (dx*dx) + (dy*dy);
       float distToCenter = sqrt(cSquared);
       if (((dx*dx + dy*dy) <= (rad * rad)) && ((dy <= -(slope*float(dx))) && (dy <= (slope*float(dx))))) {
-      	int alpha = color.a * ((rad - distToCenter)/rad);
-      	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, alpha);
+        int red, green, blue, alpha;
+        if (isEqual(color, background)){
+          red = color.r + 2*(center.y + (dy))/5;
+          green = color.g + (center.y + (dy))/9;
+          blue = color.b - ((center.y + (dy))/3);
+          alpha = color.a;
+        }
+        else{
+          red = color.r;
+          green = color.g;
+          blue = color.b;
+          alpha = color.a * ((rad - distToCenter)/rad);
+        }
+      	SDL_SetRenderDrawColor(renderer, red, green, blue, alpha);
         SDL_RenderDrawPoint(renderer, center.x + dx, center.y + dy);
       }
     }
   }
+}
+
+bool Sunray::isEqual(SDL_Color color1, SDL_Color color2){
+  if (color1.r != color2.r)
+    return false;
+  else if (color1.g != color2.g)
+    return false;
+  else if (color1.b != color2.b)
+    return false;
+  else if (color1.a != color2.a)
+      return false;
+  return true;
 }
